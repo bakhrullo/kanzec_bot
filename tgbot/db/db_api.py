@@ -49,6 +49,6 @@ async def get_order(config, tg_id):
 
 async def get_video(config, vd_id):
     async with aiohttp.ClientSession() as session:
-        async with session.get(url=f"{config.db.database_url}vide/{vd_id}/") as response:
+        async with session.get(url=f"{config.db.database_url}video/{vd_id}") as response:
             return await response.json()
 

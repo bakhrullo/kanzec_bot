@@ -49,31 +49,32 @@ async def get_prod_type(c: CallbackQuery, state: FSMContext, config):
     res = await get_one_prod(c.data, config)
     if res["quan"] == 0:
         return await c.answer("Kechirasiz bu chexoldan qolmagan 😞")
-    await state.update_data(prod_id=c.data)
+    await state.update_data(prod_id=c.data, prod=f"{res['category']['name']} {res['price']}")
     await c.message.delete()
-    await c.message.answer_photo(photo=res['photo'], caption=f"{res['descr']}\n\n{res['price']} so'm", reply_markup=conf_btns)
+    await c.message.answer(text=f"{res['descr']}\n\n{res['price']} so'm", reply_markup=conf_btns)
     await state.update_data(video=res['video'])
     await UserMenuState.next()
 
 
 async def get_prods(c: CallbackQuery, state: FSMContext, config):
     data = await state.get_data()
-    await c.message.delete()
     if c.data == "buy":
         check = await get_order(config, c.from_user.id)
         if bool(check['status']):
             return await c.answer("Kechirasiz faqat bitta chexol mumkun 😞")
 
+        await c.message.delete()
         order = await create_order(config, user_id=c.from_user.id, product_id=data['prod_id'])
-        print(order)
-        await c.message.answer(f"Sizning raqamingiz {order['id']}\n"
+        await c.message.answer(f"Sizning raqamingiz: {order['id']}\n"
+                               f"Tovar: {data['prod']} so'm\n"
                                "tez orada sizga qayerdan qanday olib\n"
                                "ketishingiz haqida ma'lumot berib\n"
-                               "yuboramiz 👨‍💻\n", reply_markup=await category_btn(await get_category(config)))
+                               "yuboramiz 👨‍💻\n")
         await UserMenuState.get_cat.set()
     else:
+        await c.message.delete()
         for video in data['video']:
-            vid = await get_video(vd_id=video, config)
+            vid = await get_video(config, vd_id=video)
             await c.message.answer_video(video=vid['video'])
             await asyncio.sleep(0.5)
         await c.message.answer("Malumotlar 👆", reply_markup=back_cb)
