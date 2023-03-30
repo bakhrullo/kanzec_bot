@@ -8,11 +8,13 @@ from tgbot.filters.back import BackFilter
 from tgbot.keyboards.inline import category_btn, prod_btn, conf_btns, back_cb
 from tgbot.keyboards.reply import contact_btn, remove_btn
 from tgbot.misc.states import UserStartState, UserMenuState
-from tgbot.db.db_api import get_category, get_prod, get_one_prod, create_order, get_order, create_user, get_video
+from tgbot.db.db_api import get_category, get_prod, get_one_prod, create_order, get_order, create_user, get_video, \
+    get_user
 
 
-async def user_start(message: Message, status, config):
-    if not status:
+async def user_start(message: Message, config):
+    res = await get_user(message.from_user.id, config)
+    if "detail" in res:
         await message.answer("Assalomu aleykum 👋\nRo'yxatdan o'tish uchun ismingizni yuboring!")
         await UserStartState.get_name.set()
     else:
@@ -62,7 +64,6 @@ async def get_prods(c: CallbackQuery, state: FSMContext, config):
         check = await get_order(config, c.from_user.id)
         if bool(check['status']):
             return await c.answer("Kechirasiz faqat bitta chexol mumkun 😞")
-
         await c.message.delete()
         order = await create_order(config, user_id=c.from_user.id, product_id=data['prod_id'])
         await c.message.answer(f"Sizning raqamingiz: {order['id']}\n"
@@ -95,4 +96,3 @@ def register_user(dp: Dispatcher):
     dp.register_callback_query_handler(get_prod_type, BackFilter(), state=UserMenuState.get_prod_type)
     dp.register_callback_query_handler(get_prods, BackFilter(), state=UserMenuState.get_prod)
     dp.register_callback_query_handler(back, state="*")
-

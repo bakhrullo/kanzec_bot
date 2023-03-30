@@ -21,7 +21,7 @@ DEBUG = False
 
 def register_all_middlewares(dp, config):
     dp.setup_middleware(EnvironmentMiddleware(config=config))
-    dp.setup_middleware(ACLMiddleware())
+    # dp.setup_middleware(ACLMiddleware())
 
 
 def register_all_filters(dp):
